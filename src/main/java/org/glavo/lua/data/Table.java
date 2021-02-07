@@ -82,7 +82,21 @@ public final class Table implements Map<Object, Object> {
 
     @Override
     public Object put(Object key, Object value) {
-        throw new UnsupportedOperationException(); // TODO
+        Objects.requireNonNull(key);
+
+        if (key instanceof Integer) {
+            int kv = (Integer) key;
+            if(kv > 0) {
+                final int oldArraySize = this.arraySize;
+
+            }
+
+        }
+        final Map<Object, Object> table = this.table == null
+                ? (this.table = new HashMap<>())
+                : this.table;
+
+        return table.put(key, value);
     }
 
     @Override
