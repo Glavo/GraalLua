@@ -5,7 +5,9 @@ import com.oracle.truffle.api.TruffleLanguage;
 @TruffleLanguage.Registration(
         id = LuaLanguage.ID,
         name = "lua",
-        defaultMimeType = LuaLanguage.MIME_TYPE
+        defaultMimeType = LuaLanguage.MIME_TYPE,
+        characterMimeTypes = LuaLanguage.MIME_TYPE,
+        fileTypeDetectors = LuaFileDetector.class
 )
 public final class LuaLanguage extends TruffleLanguage<LuaContext> {
     public static volatile int counter;
