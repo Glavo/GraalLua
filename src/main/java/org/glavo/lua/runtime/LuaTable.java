@@ -89,6 +89,7 @@ public class LuaTable implements TruffleObject {
                     }
                     arr[idx] = newValue;
                     ++this.arraySize;
+                    ++this.arrayElementsCount;
                     return table == null ? null : table.remove(key);
                 }
             }
