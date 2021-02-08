@@ -7,11 +7,11 @@ import java.util.*;
 public class LuaTable implements TruffleObject {
     private static final int DEFAULT_CAPACITY = 16;
 
-    private Object[] array;
+    Object[] array;
     int arraySize = 0;
     int arrayElementsCount = 0;
 
-    private HashMap<Object, Object> table;
+    HashMap<Object, Object> table;
 
     //region Array Helpers
 
@@ -110,6 +110,14 @@ public class LuaTable implements TruffleObject {
             }
             return table.put(key, newValue);
         }
+    }
+
+    public final int size() {
+        int size = arrayElementsCount;
+        if (table != null) {
+            size += table.size();
+        }
+        return size;
     }
 
     public final Map<Object, Object> asJavaMap() {
