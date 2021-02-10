@@ -35,13 +35,17 @@ public class LuaTable implements TruffleObject {
     }
 
     final Object getImpl(Object key) {
-        if (key instanceof Integer) {
+        if (key instanceof Number) {
             final int arraySize = this.arraySize;
             if (arraySize > 0) {
-                final Object[] array = this.array;
-                int kv = (Integer) key;
-                if (kv > 0 && kv <= arraySize) {
-                    return array[kv - 1];
+                Number nk = (Number) key;
+                int kv = nk.intValue();
+                if (nk.equals(kv)) {
+                    final Object[] array = this.array;
+
+                    if (kv > 0 && kv <= arraySize) {
+                        return array[kv - 1];
+                    }
                 }
             }
         }
@@ -59,45 +63,48 @@ public class LuaTable implements TruffleObject {
     final Object putImpl(/* NotNull */ Object key, Object newValue) {
         HashMap<Object, Object> table = this.table;
         if (key instanceof Integer) {
-            final int kv = (Integer) key;
-            if (kv > 0) {
-                final int as = this.arraySize;
-                final int idx = kv - 1;
-                if (kv <= as) {
-                    final Object[] array = this.array;
-                    Object oldValue = array[idx];
-                    if (newValue == null && oldValue != null) {
-                        --this.arrayElementsCount;
-                    } else if (newValue != null && oldValue == null) {
-                        ++this.arrayElementsCount;
-                    }
-                    array[idx] = newValue;
-                    return oldValue;
-                } else if (idx == as) {
-                    if (newValue == null) {
-                        return table == null ? null : table.remove(key);
-                    }
-                    Object[] arr = this.array;
-                    if (arr == null) {
-                        assert as == 0;
-                        arr = new Object[DEFAULT_CAPACITY];
-                        this.array = arr;
-                    } else if (arr.length == as) {
-                        Object[] newArr = growArray(as);
-                        System.arraycopy(arr, 0, newArr, 0, as);
-                        this.array = arr = newArr;
-                    }
-                    arr[idx] = newValue;
-                    ++this.arraySize;
-                    if (table == null) {
-                        ++this.arrayElementsCount;
-                        return null;
-                    } else {
-                        Object old = table.remove(key);
-                        if (old == null) {
+            Number nk = (Number) key;
+            final int kv = nk.intValue();
+            if (nk.equals(kv)) {
+                if (kv > 0) {
+                    final int as = this.arraySize;
+                    final int idx = kv - 1;
+                    if (kv <= as) {
+                        final Object[] array = this.array;
+                        Object oldValue = array[idx];
+                        if (newValue == null && oldValue != null) {
+                            --this.arrayElementsCount;
+                        } else if (newValue != null && oldValue == null) {
                             ++this.arrayElementsCount;
                         }
-                        return old;
+                        array[idx] = newValue;
+                        return oldValue;
+                    } else if (idx == as) {
+                        if (newValue == null) {
+                            return table == null ? null : table.remove(key);
+                        }
+                        Object[] arr = this.array;
+                        if (arr == null) {
+                            assert as == 0;
+                            arr = new Object[DEFAULT_CAPACITY];
+                            this.array = arr;
+                        } else if (arr.length == as) {
+                            Object[] newArr = growArray(as);
+                            System.arraycopy(arr, 0, newArr, 0, as);
+                            this.array = arr = newArr;
+                        }
+                        arr[idx] = newValue;
+                        ++this.arraySize;
+                        if (table == null) {
+                            ++this.arrayElementsCount;
+                            return null;
+                        } else {
+                            Object old = table.remove(key);
+                            if (old == null) {
+                                ++this.arrayElementsCount;
+                            }
+                            return old;
+                        }
                     }
                 }
             }

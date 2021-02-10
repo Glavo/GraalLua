@@ -18,7 +18,7 @@ We have some goals for this project in the future:
 
 * Five times faster than lua interpreter. 
 * Fully compatible with pure Lua code. 
-* Support Lua's C API (by sulong, JNI or Panama). 
+* Support Lua's C API (by sulong and NFI). 
 * Call Java and other language easily and efficiently. 
 * Easily accessible in other languages. 
 
