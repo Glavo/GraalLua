@@ -4,12 +4,23 @@
 
 Note: This project is not available yet. 
 
+## Build
+
+
+
+```
+./gradlew jar
+```
+
 ## Goals
-* Five times faster than lua interpreter. (In development)
-* Fully compatible with pure Lua code. (In development)
-* Support Lua's C API (by sulong, JNI or Panama). (In development)
-* Call Java and other language easily and efficiently. (In development)
-* Easily accessible in other languages. (In development)
+At present, the project is still in the early stage and is temporarily unavailable.
+We have some goals for this project in the future:
+
+* Five times faster than lua interpreter. 
+* Fully compatible with pure Lua code. 
+* Support Lua's C API (by sulong, JNI or Panama). 
+* Call Java and other language easily and efficiently. 
+* Easily accessible in other languages. 
 
 ## Discussions
 GitHub Discussions: [GraalLua/discussions](https://github.com/Glavo/GraalLua/discussions)
