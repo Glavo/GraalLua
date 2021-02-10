@@ -29,6 +29,11 @@ public final class LuaNil implements TruffleObject {
         return true;
     }
 
+    @ExportMessage
+    Object toDisplayString(boolean allowSideEffects) {
+        return "nil";
+    }
+
     @Override
     public final String toString() {
         return "nil";
