@@ -8,15 +8,12 @@ import com.oracle.truffle.api.dsl.TypeSystem;
 import org.glavo.lua.runtime.LuaNil;
 
 /**
- * ## Type System of Lua.
+ * Type System of Lua.
  *
- * References
- * - [Types and Values](https://www.lua.org/pil/2.html)
- * - [Type Coercion in Lua](https://developer.roblox.com/en-us/articles/Type-Coercion-in-Lua)
- * - [Coercion](http://www.lua.org/manual/5.1/manual.html#2.2.1)
+ * @see <a href="https://www.lua.org/pil/2.html">Types and Values</a>
+ * @see <a href="https://developer.roblox.com/en-us/articles/Type-Coercion-in-Lua">Type Coercion in Lua</a>
+ * @see <a href="http://www.lua.org/manual/5.1/manual.html#2.2.1">Coercion</a>
  */
-
-
 @TypeSystem({String.class, long.class, double.class, boolean.class})
 public class LuaTypes {
     @TypeCheck(LuaNil.class)
@@ -40,19 +37,19 @@ public class LuaTypes {
     }
 
     @ImplicitCast
-    public static double castDouble(String value){
+    public static double castDouble(String value) {
         return Double.parseDouble(value);
     }
 
     // Numbers to Strings
     @ImplicitCast
-    public static String castString(long value){
+    public static String castString(long value) {
         // Lua 5 seems to keep all format in decimal
         return Long.toString(value);
     }
 
     @ImplicitCast
-    public static String castString(double value){
+    public static String castString(double value) {
         return Double.toString(value);
     }
 
@@ -67,7 +64,7 @@ public class LuaTypes {
     // the original value rather than the truth value
     public static boolean truthValue(Object value) {
         if (value instanceof Boolean) {
-            return (Boolean)value;
+            return (Boolean) value;
         } else {
             return value != LuaNil.Nil;
         }
