@@ -1,6 +1,9 @@
 package org.glavo.lua.parser;
 
 import com.oracle.truffle.api.source.Source;
+import org.glavo.lua.runtime.LuaString;
+
+import java.util.Arrays;
 
 public final class Lexer {
     private final Source source;
@@ -16,7 +19,43 @@ public final class Lexer {
         this.sourceString = source.getCharacters();
     }
 
+    private static boolean isNewLine(char ch) {
+        return ch == '\n' || ch == '\r';
+    }
+
     public final void skipWhiteSpacesAndComment() {
+        final CharSequence sourceString = this.sourceString;
+        final int length = sourceString.length();
+
+        int offset = this.offset;
+
+        while (offset < length) {
+            char ch0 = sourceString.charAt(offset);
+
+            if (isNewLine(ch0) || ch0 == '\t' || ch0 == '\f' || ch0 == ' ') {
+                offset += 1;
+                continue;
+            }
+
+            if (ch0 == '-'
+                    && offset + 1 < length
+                    && sourceString.charAt(offset + 1) == '-') {
+                offset += 2;
+                if (offset < length && sourceString.charAt(offset) == '[') {
+
+                } else {
+
+                }
+
+                continue;
+            }
+
+            break;
+
+        }
+
+        this.offset = offset;
+
         throw new UnsupportedOperationException(); // TODO
     }
 
@@ -52,5 +91,50 @@ public final class Lexer {
         this.offset = currentOffset;
 
         return token;
+    }
+
+    private static final int DEFAULT_CAPACITY = 16;
+
+    private int[] cacheOffsets = new int[DEFAULT_CAPACITY];
+    private Object[] cacheValues = new Object[DEFAULT_CAPACITY];
+    private int cacheCount = 0;
+
+    public final void putCache(int offset, Object value) {
+        int[] cacheOffsets = this.cacheOffsets;
+        Object[] cacheValues = this.cacheValues;
+        int cacheCount = this.cacheCount;
+        int arrayLength = cacheOffsets.length;
+
+        assert cacheCount < 1 || cacheOffsets[cacheCount - 1] < offset;
+
+        if (cacheCount == arrayLength) {
+            int minCapacity = arrayLength + 1;
+            int newCapacity = Math.max(Math.max(arrayLength, minCapacity), arrayLength + (arrayLength >> 1));
+
+            cacheOffsets = new int[newCapacity];
+            cacheValues = new Object[newCapacity];
+
+            System.arraycopy(cacheOffsets, 0, cacheOffsets, 0, arrayLength);
+            System.arraycopy(cacheValues, 0, cacheValues, 0, arrayLength);
+
+            this.cacheOffsets = cacheOffsets;
+            this.cacheValues = cacheValues;
+        }
+        cacheOffsets[cacheCount] = offset;
+        cacheValues[cacheCount] = value;
+        ++this.cacheCount;
+    }
+
+    public final Object getCache(int offset) {
+        final int[] cacheOffsets = this.cacheOffsets;
+        final Object[] cacheValues = this.cacheValues;
+        final int cacheCount = this.cacheCount;
+
+        if (offset < 0 || cacheCount == 0) {
+            return null;
+        }
+
+        int idx = Arrays.binarySearch(cacheOffsets, 0, cacheCount, offset);
+        return idx < 0 ? null : cacheValues[idx];
     }
 }
