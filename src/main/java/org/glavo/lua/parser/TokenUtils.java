@@ -1,10 +1,13 @@
 package org.glavo.lua.parser;
 
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
+
 public final class TokenUtils {
     public static final int LENGTH_MASK = 0xfffffff;
 
     private static final int LENGTH_SHIFT = 8;
-    private static final int POSITION_SHIFT = 36;
+    private static final int OFFSET_SHIFT = 36;
 
     public static @Token long tokenOf(
             @TokenKind int kind,
@@ -14,7 +17,7 @@ public final class TokenUtils {
         assert length >= 0 && offset >= 0;
         assert offset <= LENGTH_MASK && length <= LENGTH_MASK;
 
-        return (long) offset << POSITION_SHIFT
+        return (long) offset << OFFSET_SHIFT
                 | (long) length << LENGTH_SHIFT
                 | kind;
     }
@@ -24,11 +27,19 @@ public final class TokenUtils {
     }
 
     public static int getOffset(@Token long token) {
-        return (int) (token >>> POSITION_SHIFT);
+        return (int) (token >>> OFFSET_SHIFT);
     }
 
     public static int getLength(@Token long token) {
         return (int) ((token >>> LENGTH_SHIFT) & LENGTH_MASK);
+    }
+
+    public static SourceSection getSourceSection(Source source, @Token long token) {
+        return source.createSection(getOffset(token), getLength(token));
+    }
+
+    public static boolean isEOF(@Token long token) {
+        return getKind(token) == TokenKind.TOKEN_EOF;
     }
 
     public static @TokenKind int keywordKind(String keyword) {
