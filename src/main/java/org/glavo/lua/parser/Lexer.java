@@ -19,11 +19,54 @@ public final class Lexer {
         this.sourceString = source.getCharacters();
     }
 
-    private static boolean isNewLine(char ch) {
+    static int scanLongBracketLevel(CharSequence str, int offset) {
+        final int length = str.length();
+        if (offset >= length) {
+            return -1;
+        }
+        int level = 0;
+        while (offset < length) {
+            char ch = str.charAt(offset++);
+            if (ch == '=') {
+                ++level;
+            } else if (ch == '[') {
+                return level;
+            } else {
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    static int scanLongStringEnd(CharSequence str, int offset, int level) {
+        final int length = str.length();
+        int limit = length - level - 2;
+        loop:
+        while (offset <= limit) {
+            if (str.charAt(offset) == ']') {
+                for (int i = 1; i <= level; i++) {
+                    if (str.charAt(offset + i) != '=') {
+                        offset += i;
+                        continue loop;
+                    }
+                }
+                if (str.charAt(offset + level + 1) == ']') {
+                    return offset;
+                } else {
+                    offset += level;
+                }
+            } else {
+                offset += 1;
+            }
+        }
+        return -1;
+    }
+
+    static boolean isNewLine(char ch) {
         return ch == '\n' || ch == '\r';
     }
 
-    public final void skipWhiteSpacesAndComment() {
+    final void skipWhiteSpacesAndComment() {
         final CharSequence sourceString = this.sourceString;
         final int length = sourceString.length();
 
@@ -42,21 +85,22 @@ public final class Lexer {
                     && sourceString.charAt(offset + 1) == '-') {
                 offset += 2;
                 if (offset < length && sourceString.charAt(offset) == '[') {
-
-                } else {
-
+                    int level = scanLongBracketLevel(sourceString, offset + 1);
+                    if (level >= 0) {
+                        int end = scanLongStringEnd(sourceString, offset + level + 2, level);
+                        if (end >= 0) {
+                            offset = end + level + 2;
+                            continue;
+                        }
+                    }
                 }
-
                 continue;
             }
 
             break;
-
         }
 
         this.offset = offset;
-
-        throw new UnsupportedOperationException(); // TODO
     }
 
     public final @Token long nextToken() {
@@ -93,6 +137,10 @@ public final class Lexer {
         return token;
     }
 
+    public final int getOffset() {
+        return offset;
+    }
+
     private static final int DEFAULT_CAPACITY = 16;
 
     private int[] cacheOffsets = new int[DEFAULT_CAPACITY];
@@ -108,8 +156,7 @@ public final class Lexer {
         assert cacheCount < 1 || cacheOffsets[cacheCount - 1] < offset;
 
         if (cacheCount == arrayLength) {
-            int minCapacity = arrayLength + 1;
-            int newCapacity = Math.max(Math.max(arrayLength, minCapacity), arrayLength + (arrayLength >> 1));
+            int newCapacity = Math.max(arrayLength + 1, arrayLength + (arrayLength >> 1));
 
             cacheOffsets = new int[newCapacity];
             cacheValues = new Object[newCapacity];
