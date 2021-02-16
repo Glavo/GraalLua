@@ -66,31 +66,74 @@ public final class Lexer {
         return ch == '\n' || ch == '\r';
     }
 
+    static boolean isDigit(char ch) {
+        return ch >= '0' && ch <= '9';
+    }
+
+    static int parseDigit(char ch) {
+        assert isDigit(ch);
+        return ch - '0';
+    }
+
+    static boolean isHexDigit(char ch) {
+        return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+    }
+
+    static int parseHexDigit(char ch) {
+        assert isHexDigit(ch);
+        if (ch >= '0' && ch <= '9') {
+            return ch - '0';
+        }
+        if (ch >= 'a' && ch <= 'f') {
+            return ch - 'a' + 10;
+        }
+        if (ch >= 'A' && ch <= 'F') {
+            return ch - 'A' + 10;
+        }
+        throw new AssertionError();
+    }
+
+    static boolean isWhiteSpace(char ch) {
+        switch (ch) {
+            case '\t':
+            case '\f':
+            case '\n':
+            case '\r':
+            case ' ':
+            case 11: // \v
+                return true;
+            default:
+                return false;
+        }
+    }
+
     final void skipWhiteSpacesAndComment() {
         final CharSequence sourceString = this.sourceString;
         final int length = sourceString.length();
 
-        int offset = this.offset;
+        int currentOffset = this.offset;
 
-        while (offset < length) {
-            char ch0 = sourceString.charAt(offset);
+        while (currentOffset < length) {
+            char ch0 = sourceString.charAt(currentOffset);
 
-            if (isNewLine(ch0) || ch0 == '\t' || ch0 == '\f' || ch0 == ' ') {
-                offset += 1;
+            if (isWhiteSpace(ch0)) {
+                currentOffset += 1;
                 continue;
             }
 
             if (ch0 == '-'
-                    && offset + 1 < length
-                    && sourceString.charAt(offset + 1) == '-') {
-                offset += 2;
-                if (offset < length && sourceString.charAt(offset) == '[') {
-                    int level = scanLongBracketLevel(sourceString, offset + 1);
+                    && currentOffset + 1 < length
+                    && sourceString.charAt(currentOffset + 1) == '-') {
+                currentOffset += 2;
+                if (currentOffset < length && sourceString.charAt(currentOffset) == '[') {
+                    int level = scanLongBracketLevel(sourceString, currentOffset + 1);
                     if (level >= 0) {
-                        int end = scanLongStringEnd(sourceString, offset + level + 2, level);
+                        int end = scanLongStringEnd(sourceString, currentOffset + level + 2, level);
                         if (end >= 0) {
-                            offset = end + level + 2;
+                            currentOffset = end + level + 2;
                             continue;
+                        } else {
+                            throw new LuaParseError(source, currentOffset, length - currentOffset);
                         }
                     }
                 }
@@ -100,7 +143,7 @@ public final class Lexer {
             break;
         }
 
-        this.offset = offset;
+        this.offset = currentOffset;
     }
 
     public final @Token long nextToken() {
@@ -117,9 +160,341 @@ public final class Lexer {
             return token;
         }
 
-        skipWhiteSpacesAndComment();
+        final CharSequence sourceString = this.sourceString;
+        final int length = sourceString.length();
+        int currentOffset = this.offset;
 
-        throw new UnsupportedOperationException(); // TODO
+        assert currentOffset <= length;
+        if (currentOffset == length) {
+            return TokenUtils.tokenOf(TokenKind.TOKEN_EOF, currentOffset, 0);
+        }
+
+        skipWhiteSpacesAndComment();
+        currentOffset = this.offset;
+
+        char ch = sourceString.charAt(currentOffset);
+        switch (ch) {
+            case ';':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_SEMI, currentOffset, 1);
+            case ',':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_COMMA, currentOffset, 1);
+            case '(':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_LPAREN, currentOffset, 1);
+            case ')':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_RPAREN, currentOffset, 1);
+            case ']':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_RBRACK, currentOffset, 1);
+            case '{':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_LCURLY, currentOffset, 1);
+            case '}':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_RCURLY, currentOffset, 1);
+            case '+':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_ADD, currentOffset, 1);
+            case '-':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_MINUS, currentOffset, 1);
+            case '*':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_MUL, currentOffset, 1);
+            case '^':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_POW, currentOffset, 1);
+            case '%':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_MOD, currentOffset, 1);
+            case '&':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_BAND, currentOffset, 1);
+            case '|':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_BOR, currentOffset, 1);
+            case '#':
+                this.offset += 1;
+                return TokenUtils.tokenOf(TokenKind.TOKEN_OP_LEN, currentOffset, 1);
+            case ':':
+                if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == ':') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_LABEL, currentOffset, 2);
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_COLON, currentOffset, 1);
+                }
+            case '/':
+                if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '/') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_IDIV, currentOffset, 2);
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_DIV, currentOffset, 1);
+                }
+            case '~':
+                if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '=') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_NE, currentOffset, 2);
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_WAVE, currentOffset, 1);
+                }
+            case '=':
+                if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '=') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_EQ, currentOffset, 2);
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_ASSIGN, currentOffset, 1);
+                }
+            case '<':
+                if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '<') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_SHL, currentOffset, 2);
+                } else if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '=') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_LE, currentOffset, 2);
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_LT, currentOffset, 1);
+                }
+            case '>':
+                if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '>') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_SHR, currentOffset, 2);
+                } else if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '=') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_GE, currentOffset, 2);
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_GT, currentOffset, 1);
+                }
+            case '.':
+                if (currentOffset + 2 < length
+                        && sourceString.charAt(currentOffset + 1) == '.'
+                        && sourceString.charAt(currentOffset + 2) == '.') {
+                    this.offset += 3;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_VARARG, currentOffset, 3);
+                } else if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '.') {
+                    this.offset += 2;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_OP_CONCAT, currentOffset, 2);
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_DOT, currentOffset, 1);
+                }
+            case '[':
+                if (currentOffset + 1 < length) {
+                    char ch1 = sourceString.charAt(currentOffset + 1);
+                    if (ch1 == '[' || ch1 == '=') {
+                        int level = scanLongBracketLevel(sourceString, currentOffset + 1);
+                        if (level < 0) {
+                            throw new LuaParseError(source, currentOffset, 2,
+                                    "invalid long string delimiter");
+                        }
+                        final int infoBegin = currentOffset + level + 2;
+                        int end = scanLongStringEnd(sourceString, infoBegin, level);
+                        if (end >= 0) {
+                            this.offset = end + level + 2;
+                            return TokenUtils.tokenOf(TokenKind.TOKEN_STRING, currentOffset, end + level + 2 - currentOffset);
+                        } else {
+                            throw new LuaParseError(source, currentOffset, length - currentOffset);
+                        }
+                    }
+                } else {
+                    this.offset += 1;
+                    return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_LBRACK, currentOffset, 1);
+                }
+            case '\'':
+            case '"':
+                return nextStringToken(currentOffset);
+        }
+
+        throw new UnsupportedOperationException(String.format("offset=%d, ch=%s", currentOffset, ch));
+    }
+
+    @Token long nextStringToken(final int beginOffset) {
+        final CharSequence sourceString = this.sourceString;
+        final int length = sourceString.length();
+
+        char ch0 = sourceString.charAt(beginOffset);
+        assert ch0 == '\'' || ch0 == '"';
+
+        StringBuilder builder = new StringBuilder();
+        int currentOffset = beginOffset + 1;
+        loop:
+        while (currentOffset < length) {
+            char ch1 = sourceString.charAt(currentOffset);
+            if (ch1 == ch0) {
+                long token = TokenUtils.tokenOf(TokenKind.TOKEN_STRING, beginOffset, currentOffset + 1 - beginOffset);
+                this.offset = currentOffset + 1;
+                putCache(beginOffset, builder.toString());
+                return token;
+            }
+            if (ch1 == '\\') {
+                if (currentOffset + 1 >= length) {
+                    throw new LuaParseError(source, beginOffset, currentOffset + 1 - beginOffset, "unfinished string");
+                }
+                char ch2 = sourceString.charAt(currentOffset + 1);
+                switch (ch2) {
+                    case 'a':
+                        builder.append((char) 7);
+                        currentOffset += 2;
+                        continue;
+                    case 'b':
+                        builder.append('\b');
+                        currentOffset += 2;
+                        continue;
+                    case 'f':
+                        builder.append('\f');
+                        currentOffset += 2;
+                        continue;
+                    case 'n':
+                        builder.append('\n');
+                        currentOffset += 2;
+                        continue;
+                    case 'r':
+                        builder.append('\r');
+                        currentOffset += 2;
+                        continue;
+                    case 't':
+                        builder.append('\t');
+                        currentOffset += 2;
+                        continue;
+                    case 'v':
+                        builder.append((char) 11);
+                        currentOffset += 2;
+                        continue;
+                    case '\\':
+                        builder.append('\\');
+                        currentOffset += 2;
+                        continue;
+                    case '"':
+                        builder.append('"');
+                        currentOffset += 2;
+                        continue;
+                    case '\'':
+                        builder.append('\'');
+                        currentOffset += 2;
+                        continue;
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9': {
+                        int v = parseDigit(ch2);
+                        int n = 2;
+
+                        char tmp;
+
+                        if (currentOffset + 2 < length) {
+                            tmp = sourceString.charAt(currentOffset + 2);
+                            if (isDigit(tmp)) {
+                                n = 3;
+                                v *= 10;
+                                v += parseDigit(tmp);
+
+                                if (currentOffset + 3 < length) {
+                                    tmp = sourceString.charAt(currentOffset + 3);
+                                    if (isDigit(tmp)) {
+                                        n = 4;
+                                        v *= 10;
+                                        v += parseDigit(tmp);
+                                    }
+                                }
+
+                            }
+                        }
+
+                        if (v > 0xFF) {
+                            throw new LuaParseError(source, currentOffset, n,
+                                    "decimal escape too large"
+                            );
+                        }
+
+                        builder.append((char) v);
+                        currentOffset += n;
+                        break;
+                    }
+                    case 'x': {
+                        if (currentOffset + 3 >= length) {
+
+                            throw new LuaParseError(source,
+                                    currentOffset,
+                                    currentOffset + 2 > length ? 3 : 4,
+                                    "hexadecimal digit expected");
+                        }
+
+                        char ch3 = sourceString.charAt(currentOffset + 2);
+                        char ch4 = sourceString.charAt(currentOffset + 3);
+
+                        if (!isHexDigit(ch3) || !isHexDigit(ch4)) {
+                            throw new LuaParseError(source, beginOffset, 4,
+                                    "hexadecimal digit expected");
+                        }
+
+                        builder.append((char) (parseHexDigit(ch3) * 16 + parseHexDigit(ch4)));
+                        currentOffset += 4;
+                        break;
+                    }
+                    case 'u': {
+                        if (currentOffset + 2 >= length || sourceString.charAt(currentOffset + 2) != '{') {
+                            throw new LuaParseError(source, currentOffset, 2,
+                                    "missing '{'");
+                        }
+
+                        int i = 3;
+                        int v = 0;
+                        while (currentOffset + i < length) {
+                            char ch = sourceString.charAt(currentOffset + i);
+                            i += 1;
+                            if (ch == '}') {
+                                if (i == 4) {
+                                    throw new LuaParseError(source, currentOffset, i, "hexadecimal digit expected");
+                                }
+                                if (v > 0x10FFFF) {
+                                    throw new LuaParseError(source, currentOffset, i,
+                                            "UTF-8 value too large");
+                                }
+                                builder.append((char) v);
+                                currentOffset += i;
+                                continue loop;
+                            } else if (isHexDigit(ch)) {
+                                v *= 16;
+                                v += parseHexDigit(ch);
+                            } else {
+                                throw new LuaParseError(source, currentOffset, i - 1, "hexadecimal digit expected");
+                            }
+                        }
+                        throw new LuaParseError(source, currentOffset, i, "missing '}'");
+                    }
+                    case 'z':
+                        int i = 2;
+                        while (currentOffset + i < length) {
+                            if (!isWhiteSpace(sourceString.charAt(currentOffset + i))) {
+                                break;
+                            }
+                            i++;
+                        }
+                        currentOffset += i;
+
+                }
+                continue;
+            }
+
+            builder.append(ch1);
+            currentOffset += 1;
+        }
+
+        throw new LuaParseError(source, beginOffset, length - beginOffset, "unfinished string");
     }
 
     public final @Token long lookAhead() {
