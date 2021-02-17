@@ -69,12 +69,13 @@ public final class LuaLauncher extends AbstractLanguageLauncher {
 
     @Override
     protected void printHelp(OptionCategory maxCategory) {
-        println("Lua Options:");
-        launcherOption("-e stat", "execute string 'stat'");
-        launcherOption("-i", "enter interactive mode after executing 'script'");
-        launcherOption("-l name", "require library 'name'");
-        launcherOption("-v", "show version information");
-        launcherOption("--", "stop handling options");
-        launcherOption("-", "stop handling options and execute stdin");
+        println("usage: <this-program> [options]... [script [args]...].\n" +
+                "Available options are:");
+        launcherOption("-e stat", "Execute string 'stat'.");
+        launcherOption("-i", "Enter interactive mode after executing 'script'.");
+        launcherOption("-l name", "Require library 'name'.");
+        launcherOption("--", "Stop handling options.");
+        launcherOption("-", "Stop handling options and execute stdin.");
     }
+
 }

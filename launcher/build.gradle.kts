@@ -28,9 +28,6 @@ dependencies {
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
-    // This dependency is used by the application.
-    implementation("com.google.guava:guava:29.0-jre")
-
     implementation("org.graalvm.truffle:truffle-api:$graalvmVersion")
     implementation("org.graalvm.sdk:launcher-common:$graalvmVersion")
 
