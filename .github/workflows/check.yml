@@ -33,6 +33,7 @@ jobs:
           - os: windows-latest
             gu-binary: gu
     steps:
+      - uses: actions/checkout@v2
       - name: GraalVM Setup
         uses: DeLaGuardo/setup-graalvm@master
         with:
