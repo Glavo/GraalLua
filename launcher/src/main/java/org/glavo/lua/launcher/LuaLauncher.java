@@ -51,7 +51,8 @@ public final class LuaLauncher extends AbstractLanguageLauncher {
                         .build());
             }
         } catch (IOException e) {
-            System.err.println(e.getLocalizedMessage());
+            System.err.println("Unable to open source file: " + e.getMessage());
+            e.printStackTrace(System.err);
             this.exit(1);
         }
         /// TODO: do we need to check some polyglot exceptions here?
