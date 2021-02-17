@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class CmdLineParser {
     public static class CmdResult {
         public final boolean ignoreEnv;

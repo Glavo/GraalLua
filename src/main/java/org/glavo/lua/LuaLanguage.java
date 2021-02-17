@@ -1,5 +1,6 @@
 package org.glavo.lua;
 
+import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
 
 @TruffleLanguage.Registration(
@@ -24,5 +25,10 @@ public final class LuaLanguage extends TruffleLanguage<LuaContext> {
     @Override
     protected final LuaContext createContext(Env env) {
         return null;
+    }
+
+    @Override
+    protected CallTarget parse(ParsingRequest request) throws Exception {
+        throw new UnsupportedOperationException("language is not implemented yet");
     }
 }

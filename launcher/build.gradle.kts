@@ -14,6 +14,7 @@ version = "0.1.0"
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    id("org.mikeneck.graalvm-native-image") version "1.2.0"
 }
 
 repositories {
@@ -32,7 +33,6 @@ dependencies {
     implementation("org.graalvm.sdk:launcher-common:$graalvmVersion")
 
     annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:$graalvmVersion")
-
 }
 
 application {
@@ -54,3 +54,18 @@ tasks.test {
     testLogging.showStandardStreams = true
 }
 
+
+nativeImage {
+    graalVmHome = System.getenv("JAVA_HOME")
+    mainClass = "org.glavo.lua.launcher.LuaLauncher"
+    executableName = "grlua"
+    outputDirectory = file("$buildDir/executable")
+    dependsOn(rootProject.tasks.jar)
+    arguments(
+            "--class-path",
+            rootProject.tasks.jar.get().archiveFile.get().toString(),
+            "--macro:truffle",
+            "--no-fallback",
+            "--initialize-at-build-time"
+    )
+}
