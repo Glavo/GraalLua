@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class LuaLauncher extends AbstractLanguageLauncher {
-    static final String ID = "lua" ;
-    private CmdResult cmdResult = null;
+    static final String ID = "lua";
+    private CmdLineParser.CmdResult cmdResult = null;
 
     @Override
     protected List<String> preprocessArguments(List<String> arguments, Map<String, String> polyglotOptions) {
