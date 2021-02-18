@@ -18,3 +18,29 @@ jobs:
         with:
           dependencies-cache-enabled: true
           arguments: check --info --no-daemon --stacktrace
+
+  native-images:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+        gu-binary: [ gu, gu.cmd ]
+        exclude:
+          - os: ubuntu-latest
+            gu-binary: gu.cmd
+          - os: macos-latest
+            gu-binary: gu.cmd
+    steps:
+      - uses: actions/checkout@v2
+      - name: GraalVM Setup
+        uses: DeLaGuardo/setup-graalvm@master
+        with:
+          graalvm-version: '21.0.0.java11'
+      - name: Install Native-Image
+        run: |
+          ${{ matrix.gu-binary }} install native-image
+      - uses: eskatos/gradle-command-action@v1
+        with:
+          dependencies-cache-enabled: true
+          arguments: nativeImage
+
