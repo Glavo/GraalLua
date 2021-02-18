@@ -120,9 +120,31 @@ public class LexerTest {
                 TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 0, 6),
                 createLexer("0x1p-1").nextNumberToken(0)
         );
-       assertTokens(
-               createLexer("0x1abc.0apa 0xa"),
-               TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 0, 11),
-               TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 12, 3));
+        assertTokens(
+                createLexer("0x1abc.0apa 0xa"),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 0, 11),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 12, 3));
+
+        assertTokens(createLexer(
+                "3 345 0xff 0xBEBADA\n" +
+                        "3.0 3.1416 314.16e-2 0.31416E1 34e1\n" +
+                        "0x0.1E 0xA23p-4 0X1.921FB54442D18P+1\n" +
+                        "3. .3 00001"),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 0, 1),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 2, 3),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 6, 4),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 11, 8),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 20, 3),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 24, 6),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 31, 9),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 41, 9),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 51, 4),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 56, 6),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 63, 8),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 72, 20),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 93, 2),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 96, 2),
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 99, 5)
+        );
     }
 }

@@ -281,7 +281,7 @@ public final class Lexer {
                 } else if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '.') {
                     this.offset += 2;
                     return TokenUtils.tokenOf(TokenKind.TOKEN_OP_CONCAT, currentOffset, 2);
-                } else if (currentOffset == length - 1 || !isDigit(sourceString.charAt(currentOffset))) {
+                } else if (currentOffset == length - 1 || !isDigit(sourceString.charAt(currentOffset + 1))) {
                     this.offset += 1;
                     return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_DOT, currentOffset, 1);
                 } else {
@@ -564,7 +564,7 @@ public final class Lexer {
             if (currentOffset < length
                     && (sourceString.charAt(currentOffset) == 'p' || sourceString.charAt(currentOffset) == 'P')) {
                 currentOffset += 1;
-                if (currentOffset < length && sourceString.charAt(currentOffset) == '-') {
+                if (currentOffset < length && (sourceString.charAt(currentOffset) == '-' || sourceString.charAt(currentOffset) == '+')) {
                     currentOffset += 1;
                 }
                 while (currentOffset < length) {
@@ -580,8 +580,6 @@ public final class Lexer {
                     throw new LuaParseError(source, beginOffset, currentOffset - beginOffset, "malformed number");
                 }
             }
-            this.offset = currentOffset;
-            return TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, beginOffset, currentOffset - beginOffset);
         } else {
             boolean empty = true;
 
@@ -614,7 +612,7 @@ public final class Lexer {
             if (currentOffset < length
                     && (sourceString.charAt(currentOffset) == 'e' || sourceString.charAt(currentOffset) == 'E')) {
                 currentOffset += 1;
-                if (currentOffset < length && sourceString.charAt(currentOffset) == '-') {
+                if (currentOffset < length && (sourceString.charAt(currentOffset) == '-' || sourceString.charAt(currentOffset) == '+')) {
                     currentOffset += 1;
                 }
                 while (currentOffset < length) {
@@ -630,9 +628,9 @@ public final class Lexer {
                     throw new LuaParseError(source, beginOffset, currentOffset - beginOffset, "malformed number");
                 }
             }
-            this.offset = currentOffset;
-            return TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, beginOffset, currentOffset - beginOffset);
         }
+        this.offset = currentOffset;
+        return TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, beginOffset, currentOffset - beginOffset);
     }
 
     public final @Token long lookAhead() {
