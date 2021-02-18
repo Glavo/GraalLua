@@ -4,6 +4,8 @@ import com.oracle.truffle.api.source.Source;
 import org.glavo.lua.runtime.LuaString;
 
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class Lexer {
     private final Source source;
@@ -160,17 +162,14 @@ public final class Lexer {
             return token;
         }
 
+        skipWhiteSpacesAndComment();
+        int currentOffset = this.offset;
         final CharSequence sourceString = this.sourceString;
         final int length = sourceString.length();
-        int currentOffset = this.offset;
 
-        assert currentOffset <= length;
         if (currentOffset == length) {
             return TokenUtils.tokenOf(TokenKind.TOKEN_EOF, currentOffset, 0);
         }
-
-        skipWhiteSpacesAndComment();
-        currentOffset = this.offset;
 
         char ch = sourceString.charAt(currentOffset);
         switch (ch) {
@@ -282,9 +281,11 @@ public final class Lexer {
                 } else if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '.') {
                     this.offset += 2;
                     return TokenUtils.tokenOf(TokenKind.TOKEN_OP_CONCAT, currentOffset, 2);
-                } else {
+                } else if (currentOffset == length - 1 || !isDigit(sourceString.charAt(currentOffset))) {
                     this.offset += 1;
                     return TokenUtils.tokenOf(TokenKind.TOKEN_SEP_DOT, currentOffset, 1);
+                } else {
+                    break;
                 }
             case '[':
                 if (currentOffset + 1 < length) {
@@ -311,6 +312,30 @@ public final class Lexer {
             case '\'':
             case '"':
                 return nextStringToken(currentOffset);
+        }
+
+
+        if (ch == '.' || isDigit(ch)) {
+            return nextNumberToken(currentOffset);
+        }
+        if (ch == '_' || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(ch);
+            int i = 1;
+            while (currentOffset + i < length) {
+                char c = sourceString.charAt(currentOffset + i);
+                if (c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                    builder.append(c);
+                    i += 1;
+                } else {
+                    break;
+                }
+            }
+            this.offset += i;
+            String id = builder.toString();
+            putCache(currentOffset, id);
+            int kind = TokenUtils.keywordKind(id);
+            return TokenUtils.tokenOf(kind == -1 ? TokenKind.TOKEN_IDENTIFIER : kind, currentOffset, i);
         }
 
         throw new UnsupportedOperationException(String.format("offset=%d, ch=%s", currentOffset, ch));
@@ -495,6 +520,119 @@ public final class Lexer {
         }
 
         throw new LuaParseError(source, beginOffset, length - beginOffset, "unfinished string");
+    }
+
+    @Token long nextNumberToken(final int beginOffset) {
+        final CharSequence sourceString = this.sourceString;
+        final int length = sourceString.length();
+
+        int currentOffset = beginOffset;
+        char ch = sourceString.charAt(currentOffset);
+
+        if (ch == '0' && currentOffset + 1 < length
+                && (sourceString.charAt(currentOffset + 1) == 'x' || sourceString.charAt(currentOffset + 1) == 'X')) {
+            currentOffset += 2;
+
+            boolean empty = true;
+
+            while (currentOffset < length) {
+                ch = sourceString.charAt(currentOffset);
+                if (isHexDigit(ch)) {
+                    empty = false;
+                    currentOffset += 1;
+                } else {
+                    break;
+                }
+            }
+
+            if (currentOffset < length && (sourceString.charAt(currentOffset) == '.')) {
+                currentOffset += 1;
+                while (currentOffset < length) {
+                    ch = sourceString.charAt(currentOffset);
+                    if (isHexDigit(ch)) {
+                        empty = false;
+                        currentOffset += 1;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            if (empty) {
+                throw new LuaParseError(source, beginOffset, currentOffset - beginOffset, "malformed number");
+            }
+            empty = true;
+            if (currentOffset < length
+                    && (sourceString.charAt(currentOffset) == 'p' || sourceString.charAt(currentOffset) == 'P')) {
+                currentOffset += 1;
+                if (currentOffset < length && sourceString.charAt(currentOffset) == '-') {
+                    currentOffset += 1;
+                }
+                while (currentOffset < length) {
+                    ch = sourceString.charAt(currentOffset);
+                    if (isHexDigit(ch)) {
+                        empty = false;
+                        currentOffset += 1;
+                    } else {
+                        break;
+                    }
+                }
+                if (empty) {
+                    throw new LuaParseError(source, beginOffset, currentOffset - beginOffset, "malformed number");
+                }
+            }
+            this.offset = currentOffset;
+            return TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, beginOffset, currentOffset - beginOffset);
+        } else {
+            boolean empty = true;
+
+            while (currentOffset < length) {
+                ch = sourceString.charAt(currentOffset);
+                if (isDigit(ch)) {
+                    empty = false;
+                    currentOffset += 1;
+                } else {
+                    break;
+                }
+            }
+
+            if (currentOffset < length && (sourceString.charAt(currentOffset) == '.')) {
+                currentOffset += 1;
+                while (currentOffset < length) {
+                    ch = sourceString.charAt(currentOffset);
+                    if (isDigit(ch)) {
+                        empty = false;
+                        currentOffset += 1;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            if (empty) {
+                throw new LuaParseError(source, beginOffset, currentOffset - beginOffset, "malformed number");
+            }
+            empty = true;
+            if (currentOffset < length
+                    && (sourceString.charAt(currentOffset) == 'e' || sourceString.charAt(currentOffset) == 'E')) {
+                currentOffset += 1;
+                if (currentOffset < length && sourceString.charAt(currentOffset) == '-') {
+                    currentOffset += 1;
+                }
+                while (currentOffset < length) {
+                    ch = sourceString.charAt(currentOffset);
+                    if (isDigit(ch)) {
+                        empty = false;
+                        currentOffset += 1;
+                    } else {
+                        break;
+                    }
+                }
+                if (empty) {
+                    throw new LuaParseError(source, beginOffset, currentOffset - beginOffset, "malformed number");
+                }
+            }
+            this.offset = currentOffset;
+            return TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, beginOffset, currentOffset - beginOffset);
+        }
     }
 
     public final @Token long lookAhead() {

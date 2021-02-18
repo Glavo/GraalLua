@@ -62,15 +62,15 @@ public class LexerTest {
         }
     }
 
-    private static void assertTokenKinds(Lexer lexer, @TokenKind int... kinds) {
-        for (@TokenKind int kind : kinds) {
-            assertEquals(kind, TokenUtils.getKind(lexer.nextToken()));
+    private static void assertTokens(Lexer lexer, @Token long... tokens) {
+        for (@Token long token : tokens) {
+            assertTokenEquals(token, lexer.nextToken());
         }
-        assertEquals(TokenKind.TOKEN_EOF, TokenUtils.getKind(lexer.nextToken()));
+        assertEquals(TokenKind.TOKEN_EOF, TokenUtils.getKind(lexer.nextToken()), "TokenStream is not finished");
     }
 
     @Test
-    void takeNextStringTest() {
+    void nextStringTokenTest() {
         assertTokenEquals(
                 TokenUtils.tokenOf(TokenKind.TOKEN_STRING, 0, 2),
                 createLexer("\"\"").nextStringToken(0)
@@ -89,6 +89,40 @@ public class LexerTest {
                 createLexer(" \"\\u{1234}foo\"").nextStringToken(1)
         );
 
-        assertTokenKinds(createLexer("\"\" \"\""), TokenKind.TOKEN_STRING, TokenKind.TOKEN_STRING);
+        assertTokens(createLexer("\"\" \"\""),
+                TokenUtils.tokenOf(TokenKind.TOKEN_STRING, 0, 2),
+                TokenUtils.tokenOf(TokenKind.TOKEN_STRING, 3, 2)
+        );
+
+        //language=TEXT
+        assertTokens(
+                createLexer("function foo()\n" +
+                        "  local str = \"\\u{4f60}\\u{597d}\"\n" +
+                        "  return str\n" +
+                        "end"),
+                TokenUtils.tokenOf(TokenKind.TOKEN_KW_FUNCTION, 0, 8),
+                TokenUtils.tokenOf(TokenKind.TOKEN_IDENTIFIER, 9, 3),
+                TokenUtils.tokenOf(TokenKind.TOKEN_SEP_LPAREN, 12, 1),
+                TokenUtils.tokenOf(TokenKind.TOKEN_SEP_RPAREN, 13, 1),
+                TokenUtils.tokenOf(TokenKind.TOKEN_KW_LOCAL, 17, 5),
+                TokenUtils.tokenOf(TokenKind.TOKEN_IDENTIFIER, 23, 3),
+                TokenUtils.tokenOf(TokenKind.TOKEN_OP_ASSIGN, 27, 1),
+                TokenUtils.tokenOf(TokenKind.TOKEN_STRING, 29, 18),
+                TokenUtils.tokenOf(TokenKind.TOKEN_KW_RETURN, 50, 6),
+                TokenUtils.tokenOf(TokenKind.TOKEN_IDENTIFIER, 57, 3),
+                TokenUtils.tokenOf(TokenKind.TOKEN_KW_END, 61, 3)
+        );
+    }
+
+    @Test
+    void nextNumberTokenTest() {
+        assertTokenEquals(
+                TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 0, 6),
+                createLexer("0x1p-1").nextNumberToken(0)
+        );
+       assertTokens(
+               createLexer("0x1abc.0apa 0xa"),
+               TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 0, 11),
+               TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, 12, 3));
     }
 }
