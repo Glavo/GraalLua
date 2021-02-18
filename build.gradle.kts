@@ -2,32 +2,43 @@ plugins {
     java
 }
 
-group = "org.glavo"
-version = "0.1.0"
+allprojects {
+    val graalvmVersion: String by project
 
-val graalvmVersion: String by project
+    group = "org.glavo"
+    version = "0.1.0"
 
-repositories {
-    mavenCentral()
-}
+    apply {
+        plugin("java")
+    }
 
-dependencies {
-    implementation("org.graalvm.truffle:truffle-api:$graalvmVersion")
-    annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:$graalvmVersion")
+    tasks.compileJava {
+        modularity.inferModulePath.set(true)
+        options.release.set(11)
+    }
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.7.0")
-}
+    tasks.compileTestJava {
+        options.release.set(11)
+    }
 
-tasks.compileJava {
-    modularity.inferModulePath.set(true)
-    options.release.set(11)
-}
+    tasks.test {
+        useJUnitPlatform()
+        testLogging.showStandardStreams = true
+    }
 
-tasks.compileTestJava {
-    options.release.set(11)
-}
+    repositories {
+        if (System.getProperty("org.glavo.lua.useMirror", "false")!!.toBoolean()) {
+            maven(url = "https://maven.aliyun.com/repository/central")
+        } else {
+            mavenCentral()
+        }
+    }
 
-tasks.test {
-    useJUnitPlatform()
-    testLogging.showStandardStreams = true
+    dependencies {
+        implementation("org.graalvm.truffle:truffle-api:$graalvmVersion")
+        annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:$graalvmVersion")
+
+        testImplementation("org.junit.jupiter:junit-jupiter:5.7.0")
+    }
+
 }
