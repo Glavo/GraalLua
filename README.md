@@ -25,4 +25,4 @@ We have some goals for this project in the future:
 ## Discussions
 GitHub Discussions: [GraalLua/discussions](https://github.com/Glavo/GraalLua/discussions)
 
-QQ Group: [596720308](https://jq.qq.com/?_wv=1027&k=qy1oDXFP)
+QQ Group: [314968684](https://jq.qq.com/?_wv=1027&k=NjLkGDGh)
