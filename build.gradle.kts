@@ -13,7 +13,6 @@ allprojects {
     }
 
     tasks.compileJava {
-        modularity.inferModulePath.set(true)
         options.release.set(11)
     }
 

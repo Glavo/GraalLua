@@ -1,11 +1,8 @@
 package org.glavo.lua.parser;
 
 import com.oracle.truffle.api.source.Source;
-import org.glavo.lua.runtime.LuaString;
 
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class Lexer {
     private final Source source;
