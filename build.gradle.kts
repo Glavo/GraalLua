@@ -27,11 +27,7 @@ allprojects {
     }
 
     repositories {
-        if (System.getProperty("org.glavo.lua.useMirror", "false")!!.toBoolean()) {
-            maven(url = "https://maven.aliyun.com/repository/central")
-        } else {
-            mavenCentral()
-        }
+        mavenCentral()
     }
 
     dependencies {
