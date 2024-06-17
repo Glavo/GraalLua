@@ -13,11 +13,11 @@ allprojects {
     }
 
     tasks.compileJava {
-        options.release.set(11)
+        options.release.set(21)
     }
 
     tasks.compileTestJava {
-        options.release.set(11)
+        options.release.set(21)
     }
 
     tasks.test {
