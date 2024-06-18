@@ -29,6 +29,9 @@ public final class LuaNil implements TruffleObject {
     private LuaNil() {
     }
 
+    /**
+     * {@link InteropLibrary#hasLanguage(Object)}
+     */
     @ExportMessage
     boolean hasLanguage() {
         return true;

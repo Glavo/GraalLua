@@ -27,6 +27,10 @@ public final class LuaStrings {
         return TruffleString.fromConstant(str, TruffleString.Encoding.US_ASCII);
     }
 
+    public static TruffleString fromJavaStringAscii(String s) {
+        return TruffleString.fromJavaStringUncached(s, TruffleString.Encoding.US_ASCII);
+    }
+
     private LuaStrings() {
     }
 }

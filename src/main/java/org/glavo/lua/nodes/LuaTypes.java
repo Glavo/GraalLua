@@ -19,10 +19,9 @@ import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeCast;
 import com.oracle.truffle.api.dsl.TypeCheck;
 import com.oracle.truffle.api.dsl.TypeSystem;
+import com.oracle.truffle.api.strings.TruffleString;
 import org.glavo.lua.runtime.LuaNil;
-import org.glavo.lua.runtime.LuaString;
-
-import java.nio.charset.StandardCharsets;
+import org.glavo.lua.runtime.LuaStrings;
 
 /**
  * Type System of Lua.
@@ -31,7 +30,7 @@ import java.nio.charset.StandardCharsets;
  * @see <a href="https://developer.roblox.com/en-us/articles/Type-Coercion-in-Lua">Type Coercion in Lua</a>
  * @see <a href="http://www.lua.org/manual/5.1/manual.html#2.2.1">Coercion</a>
  */
-@TypeSystem({LuaString.class, long.class, double.class, boolean.class})
+@TypeSystem({long.class, double.class, boolean.class})
 public class LuaTypes {
     @TypeCheck(LuaNil.class)
     public static boolean isLuaNil(Object value) {
@@ -49,30 +48,30 @@ public class LuaTypes {
      * Notice that Inequality Comparison should not coerce the types
      */
     @ImplicitCast
-    public static long castLong(LuaString value) {
-        return Long.decode(value.asString());
+    public static long castLong(TruffleString value) {
+        return Long.decode(value.toJavaStringUncached());
     }
 
     @ImplicitCast
-    public static double castDouble(LuaString value) {
-        return Double.parseDouble(value.asString());
+    public static double castDouble(TruffleString value) {
+        return Double.parseDouble(value.toJavaStringUncached());
     }
 
     // Numbers to Strings
     @ImplicitCast
-    public static LuaString castString(long value) {
+    public static TruffleString castString(long value) {
         // Lua 5 seems to keep all format in decimal
-        return LuaString.valueOf(value);
+        return LuaStrings.fromJavaStringAscii(Long.toString(value));
     }
 
     @ImplicitCast
-    public static LuaString castString(double value) {
-        return new LuaString(Double.toString(value));
+    public static TruffleString castString(double value) {
+        return LuaStrings.fromJavaStringAscii(Double.toString(value));
     }
 
     @ImplicitCast
-    public static LuaString castString(boolean value) {
-        return value ? LuaString.TRUE_STRING : LuaString.FALSE_STRING;
+    public static TruffleString castString(boolean value) {
+        return value ? LuaStrings.TRUE_STRING : LuaStrings.FALSE_STRING;
     }
 
     // Truth values
