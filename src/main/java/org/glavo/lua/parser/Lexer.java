@@ -108,20 +108,19 @@ public final class Lexer {
     }
 
     static boolean isWhiteSpace(char ch) {
-        switch (ch) {
-            case '\t':
-            case '\f':
-            case '\n':
-            case '\r':
-            case ' ':
-            case 11: // \v
-                return true;
-            default:
-                return false;
-        }
+        return switch (ch) {
+            case '\t',
+                 '\f',
+                 '\n',
+                 '\r',
+                 ' ',
+                 0xb // '\v'
+                    -> true;
+            default -> false;
+        };
     }
 
-    final void skipWhiteSpacesAndComment() {
+    void skipWhiteSpacesAndComment() {
         final CharSequence sourceString = this.sourceString;
         final int length = sourceString.length();
 
@@ -136,8 +135,8 @@ public final class Lexer {
             }
 
             if (ch0 == '-'
-                    && currentOffset + 1 < length
-                    && sourceString.charAt(currentOffset + 1) == '-') {
+                && currentOffset + 1 < length
+                && sourceString.charAt(currentOffset + 1) == '-') {
                 currentOffset += 2;
                 if (currentOffset < length && sourceString.charAt(currentOffset) == '[') {
                     int level = scanLongBracketLevel(sourceString, currentOffset + 1);
@@ -160,7 +159,7 @@ public final class Lexer {
         this.offset = currentOffset;
     }
 
-    public final @Token long nextToken() {
+    public @Token long nextToken() {
         if (nextToken == Token.EOF) {
             return Token.EOF;
         }
@@ -286,8 +285,8 @@ public final class Lexer {
                 }
             case '.':
                 if (currentOffset + 2 < length
-                        && sourceString.charAt(currentOffset + 1) == '.'
-                        && sourceString.charAt(currentOffset + 2) == '.') {
+                    && sourceString.charAt(currentOffset + 1) == '.'
+                    && sourceString.charAt(currentOffset + 2) == '.') {
                     this.offset += 3;
                     return TokenUtils.tokenOf(TokenKind.TOKEN_VARARG, currentOffset, 3);
                 } else if (currentOffset + 1 < length && sourceString.charAt(currentOffset + 1) == '.') {
@@ -353,7 +352,8 @@ public final class Lexer {
         throw new UnsupportedOperationException(String.format("offset=%d, ch=%s", currentOffset, ch));
     }
 
-    @Token long nextStringToken(final int beginOffset) {
+    @Token
+    long nextStringToken(final int beginOffset) {
         final CharSequence sourceString = this.sourceString;
         final int length = sourceString.length();
 
@@ -534,7 +534,8 @@ public final class Lexer {
         throw new LuaParseError(source, beginOffset, length - beginOffset, "unfinished string");
     }
 
-    @Token long nextNumberToken(final int beginOffset) {
+    @Token
+    long nextNumberToken(final int beginOffset) {
         final CharSequence sourceString = this.sourceString;
         final int length = sourceString.length();
 
@@ -542,7 +543,7 @@ public final class Lexer {
         char ch = sourceString.charAt(currentOffset);
 
         if (ch == '0' && currentOffset + 1 < length
-                && (sourceString.charAt(currentOffset + 1) == 'x' || sourceString.charAt(currentOffset + 1) == 'X')) {
+            && (sourceString.charAt(currentOffset + 1) == 'x' || sourceString.charAt(currentOffset + 1) == 'X')) {
             currentOffset += 2;
 
             boolean empty = true;
@@ -574,7 +575,7 @@ public final class Lexer {
             }
             empty = true;
             if (currentOffset < length
-                    && (sourceString.charAt(currentOffset) == 'p' || sourceString.charAt(currentOffset) == 'P')) {
+                && (sourceString.charAt(currentOffset) == 'p' || sourceString.charAt(currentOffset) == 'P')) {
                 currentOffset += 1;
                 if (currentOffset < length && (sourceString.charAt(currentOffset) == '-' || sourceString.charAt(currentOffset) == '+')) {
                     currentOffset += 1;
@@ -622,7 +623,7 @@ public final class Lexer {
             }
             empty = true;
             if (currentOffset < length
-                    && (sourceString.charAt(currentOffset) == 'e' || sourceString.charAt(currentOffset) == 'E')) {
+                && (sourceString.charAt(currentOffset) == 'e' || sourceString.charAt(currentOffset) == 'E')) {
                 currentOffset += 1;
                 if (currentOffset < length && (sourceString.charAt(currentOffset) == '-' || sourceString.charAt(currentOffset) == '+')) {
                     currentOffset += 1;
@@ -645,7 +646,7 @@ public final class Lexer {
         return TokenUtils.tokenOf(TokenKind.TOKEN_NUMBER, beginOffset, currentOffset - beginOffset);
     }
 
-    public final @Token long lookAhead() {
+    public @Token long lookAhead() {
         if (nextToken != Token.Undefined) {
             return nextToken;
         }
@@ -660,7 +661,7 @@ public final class Lexer {
         return token;
     }
 
-    public final int getOffset() {
+    public int getOffset() {
         return offset;
     }
 
@@ -670,7 +671,7 @@ public final class Lexer {
     private Object[] cacheValues = new Object[DEFAULT_CAPACITY];
     private int cacheCount = 0;
 
-    public final void putCache(int offset, Object value) {
+    public void putCache(int offset, Object value) {
         int[] cacheOffsets = this.cacheOffsets;
         Object[] cacheValues = this.cacheValues;
         int cacheCount = this.cacheCount;
@@ -695,7 +696,7 @@ public final class Lexer {
         ++this.cacheCount;
     }
 
-    public final Object getCache(int offset) {
+    public Object getCache(int offset) {
         final int[] cacheOffsets = this.cacheOffsets;
         final Object[] cacheValues = this.cacheValues;
         final int cacheCount = this.cacheCount;
