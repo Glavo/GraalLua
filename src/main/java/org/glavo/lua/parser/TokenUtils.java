@@ -17,6 +17,7 @@ package org.glavo.lua.parser;
 
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
+import org.jetbrains.annotations.NotNull;
 
 public final class TokenUtils {
     public static final int LENGTH_MASK = 0xfffffff;
@@ -57,54 +58,31 @@ public final class TokenUtils {
         return getKind(token) == TokenKind.TOKEN_EOF;
     }
 
-    public static @TokenKind int keywordKind(String keyword) {
-        switch (keyword) {
-            case "and":
-                return TokenKind.TOKEN_OP_AND;
-            case "break":
-                return TokenKind.TOKEN_KW_BREAK;
-            case "do":
-                return TokenKind.TOKEN_KW_DO;
-            case "else":
-                return TokenKind.TOKEN_KW_ELSE;
-            case "elseif":
-                return TokenKind.TOKEN_KW_ELSEIF;
-            case "end":
-                return TokenKind.TOKEN_KW_END;
-            case "false":
-                return TokenKind.TOKEN_KW_FALSE;
-            case "for":
-                return TokenKind.TOKEN_KW_FOR;
-            case "function":
-                return TokenKind.TOKEN_KW_FUNCTION;
-            case "goto":
-                return TokenKind.TOKEN_KW_GOTO;
-            case "if":
-                return TokenKind.TOKEN_KW_IF;
-            case "in":
-                return TokenKind.TOKEN_KW_IN;
-            case "local":
-                return TokenKind.TOKEN_KW_LOCAL;
-            case "nil":
-                return TokenKind.TOKEN_KW_NIL;
-            case "not":
-                return TokenKind.TOKEN_OP_NOT;
-            case "or":
-                return TokenKind.TOKEN_OP_OR;
-            case "repeat":
-                return TokenKind.TOKEN_KW_REPEAT;
-            case "return":
-                return TokenKind.TOKEN_KW_RETURN;
-            case "then":
-                return TokenKind.TOKEN_KW_THEN;
-            case "true":
-                return TokenKind.TOKEN_KW_TRUE;
-            case "until":
-                return TokenKind.TOKEN_KW_UNTIL;
-            case "while":
-                return TokenKind.TOKEN_KW_WHILE;
-            default:
-                return -1;
-        }
+    public static @TokenKind int keywordKind(@NotNull String keyword) {
+        return switch (keyword) {
+            case "and" -> TokenKind.TOKEN_OP_AND;
+            case "break" -> TokenKind.TOKEN_KW_BREAK;
+            case "do" -> TokenKind.TOKEN_KW_DO;
+            case "else" -> TokenKind.TOKEN_KW_ELSE;
+            case "elseif" -> TokenKind.TOKEN_KW_ELSEIF;
+            case "end" -> TokenKind.TOKEN_KW_END;
+            case "false" -> TokenKind.TOKEN_KW_FALSE;
+            case "for" -> TokenKind.TOKEN_KW_FOR;
+            case "function" -> TokenKind.TOKEN_KW_FUNCTION;
+            case "goto" -> TokenKind.TOKEN_KW_GOTO;
+            case "if" -> TokenKind.TOKEN_KW_IF;
+            case "in" -> TokenKind.TOKEN_KW_IN;
+            case "local" -> TokenKind.TOKEN_KW_LOCAL;
+            case "nil" -> TokenKind.TOKEN_KW_NIL;
+            case "not" -> TokenKind.TOKEN_OP_NOT;
+            case "or" -> TokenKind.TOKEN_OP_OR;
+            case "repeat" -> TokenKind.TOKEN_KW_REPEAT;
+            case "return" -> TokenKind.TOKEN_KW_RETURN;
+            case "then" -> TokenKind.TOKEN_KW_THEN;
+            case "true" -> TokenKind.TOKEN_KW_TRUE;
+            case "until" -> TokenKind.TOKEN_KW_UNTIL;
+            case "while" -> TokenKind.TOKEN_KW_WHILE;
+            default -> -1;
+        };
     }
 }

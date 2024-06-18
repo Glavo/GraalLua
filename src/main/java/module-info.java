@@ -15,6 +15,7 @@
  */
 module org.glavo.lua {
     requires org.graalvm.truffle;
+    requires static org.jetbrains.annotations;
 
     provides com.oracle.truffle.api.provider.TruffleLanguageProvider with org.glavo.lua.LuaLanguageProvider;
 

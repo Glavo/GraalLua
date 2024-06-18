@@ -30,6 +30,7 @@ allprojects {
     }
 
     dependencies {
+        compileOnly("org.jetbrains:annotations:24.1.0")
         implementation("org.graalvm.truffle:truffle-api:$graalvmVersion")
         annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:$graalvmVersion")
 
