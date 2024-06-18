@@ -25,8 +25,11 @@ import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
+import java.io.Serial;
+
 @ExportLibrary(InteropLibrary.class)
 public class LuaParseError extends AbstractTruffleException {
+    @Serial
     private static final long serialVersionUID = 0L;
 
     private final Source source;
