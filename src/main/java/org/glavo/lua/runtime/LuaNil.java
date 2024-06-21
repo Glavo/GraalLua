@@ -20,11 +20,14 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.utilities.TriState;
 import org.glavo.lua.LuaLanguage;
 
 @ExportLibrary(InteropLibrary.class)
 public final class LuaNil implements TruffleObject {
     public static final LuaNil Nil = new LuaNil();
+
+    private static final int IDENTITY_HASH = System.identityHashCode(Nil);
 
     private LuaNil() {
     }
@@ -50,6 +53,22 @@ public final class LuaNil implements TruffleObject {
     @ExportMessage
     Object toDisplayString(boolean allowSideEffects) {
         return "nil";
+    }
+
+    @ExportMessage
+    static TriState isIdenticalOrUndefined(LuaNil receiver, Object other) {
+        /*
+         * LuaNull values are identical to other SLNull values.
+         */
+        return TriState.valueOf(Nil == other);
+    }
+
+    @ExportMessage
+    static int identityHashCode(LuaNil receiver) {
+        /*
+         * We do not use 0, as we want consistency with System.identityHashCode(receiver).
+         */
+        return IDENTITY_HASH;
     }
 
     @Override
