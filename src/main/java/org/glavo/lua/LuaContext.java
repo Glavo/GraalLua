@@ -15,14 +15,21 @@
  */
 package org.glavo.lua;
 
-import java.nio.charset.StandardCharsets;
-import java.util.WeakHashMap;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.TruffleLanguage;
 
 public final class LuaContext {
-    final WeakHashMap<String, byte[]> cachedStrings = new WeakHashMap<>();
+    private final LuaLanguage language;
 
-    public byte[] toBytes(String str) {
-        assert str != null;
-        return cachedStrings.computeIfAbsent(str, s -> s.getBytes(StandardCharsets.UTF_8));
+    @CompilerDirectives.CompilationFinal
+    private TruffleLanguage.Env env;
+
+    public LuaContext(LuaLanguage language, TruffleLanguage.Env env) {
+        this.language = language;
+        this.env = env;
+    }
+
+    void patchContext(TruffleLanguage.Env newEnv) {
+        this.env = newEnv;
     }
 }
