@@ -45,8 +45,7 @@ public class LuaTable implements TruffleObject {
         if (key == null || key == LuaNil.Nil) {
             return LuaNil.Nil;
         }
-        Object res = getImpl(key);
-        return res == null ? LuaNil.Nil : res;
+        return Objects.requireNonNullElse(getImpl(key), LuaNil.Nil);
     }
 
     final Object getImpl(Object key) {
