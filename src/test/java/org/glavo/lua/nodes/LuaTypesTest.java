@@ -17,7 +17,7 @@ package org.glavo.lua.nodes;
 
 import org.glavo.lua.runtime.LuaNil;
 import org.glavo.lua.runtime.LuaStrings;
-import org.glavo.lua.runtime.LuaTable;
+import org.glavo.lua.runtime.table.DefaultLuaTable;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +41,6 @@ public final class LuaTypesTest {
         assertTrue(LuaTypes.truthValue(""));
         assertTrue(LuaTypes.truthValue(0));
         assertTrue(LuaTypes.truthValue(-1));
-        assertTrue(LuaTypes.truthValue(new LuaTable()));
+        assertTrue(LuaTypes.truthValue(new DefaultLuaTable()));
     }
 }

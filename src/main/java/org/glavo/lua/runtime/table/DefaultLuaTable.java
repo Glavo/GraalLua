@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.glavo.lua.runtime;
+package org.glavo.lua.runtime.table;
 
-import com.oracle.truffle.api.interop.TruffleObject;
+import org.glavo.lua.runtime.LuaNil;
 
 import java.util.*;
 
-public class LuaTable implements TruffleObject {
+public final class DefaultLuaTable extends LuaTable {
     private static final int DEFAULT_CAPACITY = 16;
 
     Object[] array;
@@ -144,7 +144,7 @@ public class LuaTable implements TruffleObject {
     @Override
     public String toString() {
         //TODO
-        return "LuaTable{" +
+        return "DefaultLuaTable{" +
                 "array=" + Arrays.toString(array) +
                 ", arraySize=" + arraySize +
                 ", arrayElementsCount=" + arrayElementsCount +

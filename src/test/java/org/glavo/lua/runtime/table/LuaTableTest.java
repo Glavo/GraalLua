@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.glavo.lua.runtime;
+package org.glavo.lua.runtime.table;
 
 import org.junit.jupiter.api.*;
-
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public final class LuaTableTest {
     @Test
     public void arrayTest() {
-        var table = new LuaTable();
+        var table = new DefaultLuaTable();
         assertNull(table.array);
         assertNull(table.table);
         assertEquals(0, table.size());
