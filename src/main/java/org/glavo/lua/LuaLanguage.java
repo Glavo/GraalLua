@@ -38,7 +38,7 @@ public final class LuaLanguage extends TruffleLanguage<LuaContext> {
 
     @Override
     protected LuaContext createContext(Env env) {
-        return new LuaContext();
+        return new LuaContext(this, env);
     }
 
     @Override
