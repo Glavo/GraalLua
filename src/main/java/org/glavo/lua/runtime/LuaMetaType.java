@@ -76,6 +76,17 @@ public final class LuaMetaType implements TruffleObject {
         }
     }
 
+    @ExportMessage(name = "getMetaQualifiedName")
+    @ExportMessage(name = "getMetaSimpleName")
+    public String getName() {
+        return name;
+    }
+
+    @ExportMessage
+    Object toDisplayString(boolean allowSideEffects) {
+        return name;
+    }
+
     @CompilerDirectives.TruffleBoundary
     @Override
     public String toString() {
