@@ -6,7 +6,7 @@ allprojects {
     val graalvmVersion: String by project
 
     group = "org.glavo"
-    version = "0.1.0"
+    version = "0.1.0" + "-SNAPSHOT"
 
     apply {
         plugin("java")
